@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIMO - 项目排期管理</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="login-page">
+    <div class="login-card">
+      <h2>MIMO 项目排期</h2>
+      <input type="text" id="login-username" placeholder="用户名" autocomplete="username">
+      <input type="password" id="login-password" placeholder="密码" autocomplete="current-password">
+      <button class="btn-primary" onclick="doLogin()">登录</button>
+      <button class="btn-outline" onclick="doRegister()">注册</button>
+      <div class="error-msg" id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- App Page -->
+  <div id="app-page">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div style="font-weight:700;font-size:15px;">MIMO</div>
+      <div class="user-info">
+        <span id="user-display"></span>
+        <button onclick="doLogout()">退出</button>
+      </div>
+    </div>
+
+    <!-- Report -->
+    <div class="report-bar" id="report-bar">
+      <div class="report-item"><span class="label">成员:</span><span class="value" id="r-members">-</span></div>
+      <div class="report-item"><span class="label">任务:</span><span class="value" id="r-tasks">-</span></div>
+      <div class="report-item"><span class="label">加班:</span><span class="value" id="r-overtime">-</span><span class="total">小时</span></div>
+      <div class="report-item"><span class="label">休假:</span><span class="value" id="r-leave">-</span><span class="total">小时</span></div>
+    </div>
+
+    <!-- Forms -->
+    <div class="forms-section">
+      <div class="forms-toggle" onclick="toggleForms()">
+        <span style="font-size:12px;font-weight:600;">📋 快捷操作</span>
+        <span class="arrow" id="forms-arrow">▼</span>
+      </div>
+      <div class="forms-content" id="forms-content">
+        <div class="forms-grid">
+          <!-- Add Task -->
+          <div class="form-card">
+            <h4>添加任务</h4>
+            <div class="form-row">
+              <label>人员</label>
+              <select id="task-user"></select>
+            </div>
+            <div class="form-row">
+              <label>迭代</label>
+              <div class="autocomplete-wrap">
+                <input type="text" id="task-iteration" placeholder="迭代名称" autocomplete="off">
+                <div class="autocomplete-list" id="task-iteration-list"></div>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>开始</label>
+              <input type="date" id="task-start">
+            </div>
+            <div class="form-row">
+              <label>结束</label>
+              <input type="date" id="task-end">
+            </div>
+            <div class="hours-grid">
+              <div class="form-row"><label>评审</label><input type="number" id="task-h-review" min="0" step="0.1" value="0"></div>
+              <div class="form-row"><label>编码</label><input type="number" id="task-h-coding" min="0" step="0.1" value="0"></div>
+              <div class="form-row"><label>测跟</label><input type="number" id="task-h-testing" min="0" step="0.1" value="0"></div>
+              <div class="form-row"><label>上线</label><input type="number" id="task-h-deploy" min="0" step="0.1" value="0"></div>
+              <div class="form-row"><label>跟踪</label><input type="number" id="task-h-tracking" min="0" step="0.1" value="0"></div>
+              <div class="form-row"><label>其它</label><input type="number" id="task-h-other" min="0" step="0.1" value="0"></div>
+            </div>
+            <button onclick="addTask()">添加</button>
+          </div>
+
+          <!-- Add Leave -->
+          <div class="form-card">
+            <h4>添加请假</h4>
+            <div class="form-row">
+              <label>人员</label>
+              <select id="leave-user"></select>
+            </div>
+            <div class="form-row">
+              <label>日期</label>
+              <input type="date" id="leave-date">
+            </div>
+            <div class="form-row">
+              <label>时长</label>
+              <input type="number" id="leave-hours" min="0" step="0.1" placeholder="小时">
+            </div>
+            <button onclick="addLeave()">添加</button>
+          </div>
+
+          <!-- Add Overtime -->
+          <div class="form-card">
+            <h4>添加加班</h4>
+            <div class="form-row">
+              <label>人员</label>
+              <select id="overtime-user"></select>
+            </div>
+            <div class="form-row">
+              <label>日期</label>
+              <input type="date" id="overtime-date">
+            </div>
+            <div class="form-row">
+              <label>时长</label>
+              <input type="number" id="overtime-hours" min="0" step="0.1" placeholder="小时">
+            </div>
+            <button onclick="addOvertime()">添加</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Gantt -->
+    <div class="gantt-section">
+      <div class="gantt-toolbar">
+        <button id="view-task" class="active" onclick="setGanttView('task')">任务视图</button>
+        <button id="view-person" onclick="setGanttView('person')">人员视图</button>
+        <span class="hint">Shift+滚轮 横向滚动 | Ctrl+滚轮 缩放 | 双击编辑 | 拖拽移动/拉伸</span>
+      </div>
+      <div class="gantt-container">
+        <div class="gantt-sidebar">
+          <div class="gantt-sidebar-header" id="sidebar-header">迭代</div>
+          <div class="gantt-sidebar-rows" id="sidebar-rows"></div>
+        </div>
+        <div class="gantt-chart" id="gantt-chart">
+          <div class="gantt-chart-inner" id="gantt-inner">
+            <div class="gantt-header" id="gantt-header"></div>
+            <div class="gantt-body" id="gantt-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  <div class="gantt-tooltip" id="gantt-tooltip" style="display:none;"></div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="edit-modal" style="display:none;">
+    <div class="modal">
+      <h3 id="modal-title">编辑任务</h3>
+      <div id="modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn-danger" id="modal-delete" onclick="deleteCurrent()">删除</button>
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-primary" onclick="saveModal()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+[package]
+name = "hermes-mimo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4"
+actix-files = "0.6"
+actix-session = { version = "0.9", features = ["cookie-session"] }
+rusqlite = { version = "0.31", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
+bcrypt = "0.15"
+tokio = { version = "1", features = ["full"] }
+env_logger = "0.11"
+log = "0.4"
+reqwest = { version = "0.12", features = ["json"] }
